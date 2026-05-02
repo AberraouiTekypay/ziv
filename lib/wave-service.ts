@@ -91,14 +91,16 @@ export async function getWaveRecipientWithWave(id: string): Promise<any> {
 export async function createWave(
   templateId: string, 
   creatorId: string, 
-  personalMessage?: string
+  personalMessage?: string,
+  senderName?: string
 ): Promise<Wave> {
   const { data, error } = await (supabase as any)
     .from('waves')
     .insert({
       template_id: templateId,
       creator_id: creatorId,
-      personal_message: personalMessage
+      personal_message: personalMessage,
+      sender_name: senderName
     })
     .select()
     .single()

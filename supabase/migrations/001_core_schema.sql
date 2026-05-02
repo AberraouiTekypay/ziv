@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS public.waves (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   template_id UUID REFERENCES public.wave_templates(id),
   creator_id UUID REFERENCES public.profiles(id),
+  sender_name TEXT,
   personal_message TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );

@@ -80,7 +80,7 @@ export default function WaveInteraction({ recipient }: Props) {
         <div className="p-10 flex-1 flex flex-col items-center justify-center text-center space-y-12">
           <div className="space-y-4">
             <span className="text-sm font-bold uppercase tracking-widest text-[#004D40] opacity-40">
-              Someone thought of you.
+              {wave?.sender_name ? `${wave.sender_name} sent you this.` : 'Someone thought of you.'}
             </span>
             <h1 className="text-4xl font-black text-[#1A1A1A] leading-tight">
               {template?.title}

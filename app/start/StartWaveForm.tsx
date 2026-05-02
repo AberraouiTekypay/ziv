@@ -39,7 +39,9 @@ export default function StartWaveForm({ templates }: Props) {
 
     setIsSubmitting(true)
     setError(null)
-    const res = await startWaveAction(selectedTemplateId, validContacts, message)
+    
+    const senderName = localStorage.getItem('ziv_tester_name') || undefined
+    const res = await startWaveAction(selectedTemplateId, validContacts, message, senderName)
     
     if (res.success) {
       setStep(3)

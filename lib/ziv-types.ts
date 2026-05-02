@@ -18,6 +18,7 @@ export type Wave = {
   id: string
   template_id: string | null
   creator_id: string | null
+  sender_name: string | null
   personal_message: string | null
   created_at: string
 }

@@ -19,7 +19,8 @@ const RECEIVER_DAILY_LIMIT = 3
 export async function startWaveAction(
   templateId: string, 
   contacts: string[], 
-  personalMessage: string
+  personalMessage: string,
+  senderName?: string
 ) {
   try {
     const profile = await getOrCreateDemoProfile()
@@ -50,7 +51,7 @@ export async function startWaveAction(
     }
 
     // 4. Create wave
-    const wave = await createWave(templateId, profile.id, personalMessage)
+    const wave = await createWave(templateId, profile.id, personalMessage, senderName)
     const recipientIds: string[] = []
 
     for (const contact of validContacts) {
@@ -91,7 +92,8 @@ export async function completeWaveAction(recipientId: string) {
 export async function passWaveForwardAction(
   originalRecipientId: string, 
   contacts: string[], 
-  personalMessage: string
+  personalMessage: string,
+  senderName?: string
 ) {
   try {
     const profile = await getOrCreateDemoProfile()
@@ -124,7 +126,7 @@ export async function passWaveForwardAction(
     }
 
     // 4. Create new wave
-    const newWave = await createWave(templateId, profile.id, personalMessage)
+    const newWave = await createWave(templateId, profile.id, personalMessage, senderName)
     
     for (const contact of validContacts) {
       await assignWaveRecipient(newWave.id, profile.id, contact)

@@ -61,5 +61,30 @@ The initial migration seeds the following templates:
 9.  Share a meal without your phone
 10. Tell someone you appreciate them
 
+## Core Flows
+
+### 1. Start a Wave (`/start`)
+- Select a pre-defined template from the ivory card list.
+- Enter 1-3 contacts (names or emails) to send the wave to.
+- Add an optional personal message.
+- A new wave is created, and unique links are generated for each recipient.
+
+### 2. Receive & Complete a Wave (`/wave/[id]`)
+- View the wave card sent by "Someone who thought of you."
+- Perform the requested action in the real world.
+- Click "I did it" to mark the wave as completed.
+- Experience a soft gold glow and a moment of appreciation.
+
+### 3. Pass it Forward
+- After completion, you can pass the same template forward to 1-3 new people.
+- This creates a ripple effect, keeping the positive action moving.
+
+## Testing Manually
+
+1.  **Start a wave**: Go to `/start`, pick a template, enter a test contact, and submit.
+2.  **Inspect Database**: In Supabase, look at the `wave_recipients` table to find the unique `id` for your test recipient.
+3.  **Receive wave**: Navigate to `/wave/[your-recipient-id]` to see the wave card.
+4.  **Complete & Forward**: Click "I did it", then use the "Pass it forward" form to extend the chain.
+
 ---
 An EM300.co Company

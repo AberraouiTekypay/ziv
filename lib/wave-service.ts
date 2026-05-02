@@ -8,6 +8,36 @@ import {
 } from './ziv-types'
 
 /**
+ * Get or create a demo profile for the current user.
+ * In a real app, this would be handled by Supabase Auth.
+ */
+export async function getOrCreateDemoProfile(): Promise<Profile> {
+  const demoEmail = 'demo@em300.co'
+  const demoId = '00000000-0000-0000-0000-000000000000'
+
+  const { data: existing } = await (supabase as any)
+    .from('profiles')
+    .select('*')
+    .eq('id', demoId)
+    .maybeSingle()
+
+  if (existing) return existing as Profile
+
+  const { data: created, error } = await (supabase as any)
+    .from('profiles')
+    .insert({
+      id: demoId,
+      email: demoEmail,
+      display_name: 'Ziv Demo User'
+    })
+    .select()
+    .single()
+
+  if (error) throw error
+  return created as Profile
+}
+
+/**
  * Fetch all active wave templates.
  */
 export async function getActiveTemplates(): Promise<WaveTemplate[]> {
@@ -22,12 +52,54 @@ export async function getActiveTemplates(): Promise<WaveTemplate[]> {
 }
 
 /**
+ * Fetch a specific wave template by ID.
+ */
+export async function getTemplateById(id: string): Promise<WaveTemplate> {
+  const { data, error } = await (supabase as any)
+    .from('wave_templates')
+    .select('*')
+    .eq('id', id)
+    .single()
+
+  if (error) throw error
+  return data as WaveTemplate
+}
+
+/**
+ * Fetch a wave recipient with its related wave and template.
+ */
+export async function getWaveRecipientWithWave(id: string): Promise<any> {
+  const { data, error } = await (supabase as any)
+    .from('wave_recipients')
+    .select(`
+      *,
+      waves (
+        *,
+        wave_templates (*)
+      )
+    `)
+    .eq('id', id)
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+/**
  * Create a new wave entry.
  */
-export async function createWave(wave: Partial<Wave>): Promise<Wave> {
+export async function createWave(
+  templateId: string, 
+  creatorId: string, 
+  personalMessage?: string
+): Promise<Wave> {
   const { data, error } = await (supabase as any)
     .from('waves')
-    .insert(wave)
+    .insert({
+      template_id: templateId,
+      creator_id: creatorId,
+      personal_message: personalMessage
+    })
     .select()
     .single()
 
@@ -38,10 +110,19 @@ export async function createWave(wave: Partial<Wave>): Promise<Wave> {
 /**
  * Assign a wave to a recipient.
  */
-export async function assignWaveRecipient(recipient: Partial<WaveRecipient>): Promise<WaveRecipient> {
+export async function assignWaveRecipient(
+  waveId: string, 
+  senderId: string, 
+  receiverContact: string
+): Promise<WaveRecipient> {
   const { data, error } = await (supabase as any)
     .from('wave_recipients')
-    .insert(recipient)
+    .insert({
+      wave_id: waveId,
+      sender_id: senderId,
+      receiver_contact: receiverContact,
+      status: 'pending'
+    })
     .select()
     .single()
 
@@ -60,6 +141,7 @@ export async function markWaveOpened(recipientId: string): Promise<void> {
       opened_at: new Date().toISOString()
     })
     .eq('id', recipientId)
+    .eq('status', 'pending') // Only mark as opened if it was pending
 
   if (error) throw error
 }
@@ -82,10 +164,20 @@ export async function markWaveCompleted(recipientId: string): Promise<void> {
 /**
  * Log a system or user event.
  */
-export async function logEvent(event: Partial<ZivEvent>): Promise<void> {
+export async function logEvent(
+  userId: string | null, 
+  waveId: string | null, 
+  eventName: string, 
+  metadata: Record<string, any> = {}
+): Promise<void> {
   const { error } = await (supabase as any)
     .from('events')
-    .insert(event)
+    .insert({
+      user_id: userId,
+      wave_id: waveId,
+      event_name: eventName,
+      metadata: metadata
+    })
 
   if (error) throw error
 }

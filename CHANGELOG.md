@@ -19,3 +19,14 @@
 - Seeded 10 core wave templates.
 - TypeScript types for the core data model in `lib/ziv-types.ts`.
 - Core Wave Service with interaction placeholders in `lib/wave-service.ts`.
+
+## [0.1.2] - 2026-05-02
+
+### Added
+- Core user flow: Receive a wave (`/wave/[id]`), complete it, and pass it forward.
+- Start wave flow (`/start`) to choose a template and initiate a new wave.
+- Full-screen minimalist UI with ivory cards, deep teal buttons, and soft gold completion glow.
+- Server Actions for starting, completing, and forwarding waves.
+- Automated "opened" status tracking and system event logging.
+- Demo profile helper to handle the absence of full authentication.
+- CSS animations for transitions between flow states.

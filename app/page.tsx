@@ -17,7 +17,7 @@ export default function Home() {
         <div className="pt-8">
           <Link 
             href="/start"
-            className="inline-block bg-[#1A1A1A] text-white px-10 py-5 rounded-full text-lg font-bold transition-transform hover:scale-105 active:scale-95 shadow-lg shadow-black/10"
+            className="inline-block bg-[#004D40] text-white px-10 py-5 rounded-full text-lg font-bold transition-transform hover:scale-105 active:scale-95 shadow-lg shadow-[#004D40]/20"
           >
             Start a wave
           </Link>

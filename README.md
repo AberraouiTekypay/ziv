@@ -29,23 +29,43 @@ Stop scrolling. Feel something real.
 
 ## Database Setup
 
-### Applying Migrations
+### Supabase Project Setup
 
-To set up the database schema and seed templates, follow these steps:
-
-1.  Open your [Supabase Project Dashboard](https://app.supabase.com/).
-2.  Navigate to the **SQL Editor**.
-3.  Click **New query**.
-4.  Copy the contents of `supabase/migrations/001_core_schema.sql` and paste them into the editor.
-5.  Click **Run**.
+1.  **Create a Project**: Start a new project on [Supabase](https://supabase.com/).
+2.  **Apply Migrations**:
+    - Navigate to the **SQL Editor**.
+    - Click **New query**.
+    - Copy the contents of `supabase/migrations/001_core_schema.sql` and paste them into the editor.
+    - Click **Run**.
+3.  **Get Credentials**:
+    - Go to **Project Settings** > **API**.
+    - Copy the **Project URL** and **anon public** key.
 
 ### Table Overview
 
-- `profiles`: User profiles and contact information.
-- `wave_templates`: Pre-defined templates for creating waves.
-- `waves`: Individual "wave" instances created from a template.
-- `wave_recipients`: Tracking for who receives a wave and their progress (pending, opened, completed, muted).
-- `events`: System-wide event logging for analytics and tracking.
+- `profiles`: User profiles and contact information. (RLS Enabled)
+- `wave_templates`: Pre-defined templates for creating waves. (RLS Enabled)
+- `waves`: Individual "wave" instances created from a template. (RLS Enabled)
+- `wave_recipients`: Tracking for who receives a wave and their progress. (RLS Enabled)
+- `events`: System-wide event logging for analytics. (RLS Enabled)
+
+---
+
+## Deployment
+
+### Vercel Deployment
+
+1.  **Environment Variables**: In your Vercel project settings, add the following:
+    - `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase Project URL.
+    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase Anon Public Key.
+    - `NEXT_PUBLIC_APP_URL`: Your deployed site URL (e.g., `https://ziv-zeta.vercel.app`).
+2.  **Deploy**: Push your code to GitHub (connected to Vercel) or run `vercel --prod`.
+
+### Testing After Deployment
+
+1.  **Internal Verification**: Navigate to `/test` on your live site.
+2.  **Generate a Wave**: Select a template and enter a test name.
+3.  **Live Flow**: Copy the generated link (which uses your `NEXT_PUBLIC_APP_URL`) and open it in a mobile browser or private window to verify the receiver -> complete -> forward loop.
 
 ### Seed Templates
 

@@ -40,3 +40,12 @@
 - Graceful error handling and validation for all wave-related forms.
 - Visual polish: Refined card spacing, button states, and completion animations.
 - Empty states for missing templates and invalid wave links.
+
+## [0.1.4] - 2026-05-02
+
+### Added
+- Hardened Supabase integration with production runtime error checking.
+- Idempotent SQL migration (`001_core_schema.sql`) with pgcrypto and conflict protection.
+- Row Level Security (RLS) enabled on all tables with permissive development policies.
+- Full deployment readiness for Vercel, including environment variable mapping.
+- Comprehensive deployment documentation in `README.md`.

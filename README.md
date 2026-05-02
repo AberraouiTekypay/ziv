@@ -122,5 +122,27 @@ Ziv tracks basic anonymous metrics to monitor the health of the ripple:
 - **Completion Rate**: % of recipients who complete their wave.
 - **Forward Rate**: % of waves that lead to at least one "pass-forward" action.
 
+## Internal Testing Protocol (Sprint 1F)
+
+Before moving to Sprint 2, the following protocol must be completed and documented:
+
+### 1. Manual Loop Verification
+- Use the `/test` tool to generate a unique wave link.
+- Open the link in a mobile browser (simulating a real user).
+- Complete the action and pass it forward.
+- Verify that the `status` in the `wave_recipients` table transitions correctly: `pending` -> `opened` -> `completed`.
+
+### 2. Boundary Condition Tests
+- **Sender Cap**: Verify that creating a 4th recipient within 24h triggers the "Let it breathe." error.
+- **Deduplication**: Verify that sending the same template to the same contact twice within 24h is blocked.
+- **Data Integrity**: Ensure `events` are logged for `wave_started`, `wave_opened`, `wave_completed`, and `wave_forwarded`.
+
+### 3. Success Metrics
+A stable Sprint 1 is defined by:
+- **First-wave Completion Rate**: > 40% (Target)
+- **Forward Rate**: > 20% (Target)
+- **Time to Completion**: Median < 4 hours.
+- **Qualitative Response**: Users report the UI feels "calm" and "soft".
+
 ---
 An EM300.co Company

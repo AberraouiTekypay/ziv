@@ -9,9 +9,12 @@ export default async function TestPage() {
   return (
     <div className="min-h-screen bg-[#FDFCFB] p-6 sm:p-12 text-[#1A1A1A]">
       <div className="max-w-3xl mx-auto space-y-8">
-        <header className="space-y-2">
-          <h1 className="text-4xl font-black uppercase tracking-tighter">Internal Testing</h1>
-          <p className="text-gray-500 font-light">
+        <header className="space-y-4">
+          <div className="inline-block px-3 py-1 bg-red-50 text-red-600 rounded-full text-[10px] font-bold uppercase tracking-widest border border-red-100 animate-pulse">
+            Internal testing only
+          </div>
+          <h1 className="text-4xl font-black uppercase tracking-tighter">Testing Tools</h1>
+          <p className="text-gray-500 font-light max-w-xl">
             This tool is for manual verification of the core wave loop. 
             It bypasses client-side validation but still respects server-side anti-spam rules.
           </p>

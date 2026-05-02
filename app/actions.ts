@@ -8,67 +8,46 @@ import {
   logEvent,
   markWaveCompleted,
   getWaveRecipientWithWave,
-  getDailySenderRecipientCount,
-  getDailyReceiverActiveCount,
-  hasDuplicateRecentWave
+  getDailySenderRecipientCount
 } from '@/lib/wave-service'
 
 const SENDER_DAILY_LIMIT = 3
-const RECEIVER_DAILY_LIMIT = 3
 
+/**
+ * Initiates a new wave from a template and returns a shareable recipient link ID.
+ */
 export async function startWaveAction(
   templateId: string, 
-  contacts: string[], 
   personalMessage: string,
   senderName?: string
 ) {
   try {
     const profile = await getOrCreateDemoProfile()
     
-    // 1. Check sender's daily cap
+    // 1. Check sender's daily cap (max 3 recipients per sender per 24h)
     const sentCount = await getDailySenderRecipientCount(profile.id)
-    const newCount = contacts.filter(c => c.trim()).length
-    if (sentCount + newCount > SENDER_DAILY_LIMIT) {
+    if (sentCount >= SENDER_DAILY_LIMIT) {
       return { success: false, error: 'Let it breathe.' }
     }
 
-    // 2. Validate and filter contacts
-    const validContacts = contacts.map(c => c.trim()).filter(c => c !== '')
-    if (validContacts.length === 0) return { success: false, error: 'Choose someone to reach.' }
-    if (validContacts.length > 3) return { success: false, error: 'One small ripple at a time (max 3).' }
-
-    // 3. Check for duplicates and receiver caps
-    for (const contact of validContacts) {
-      const isDuplicate = await hasDuplicateRecentWave(profile.id, contact)
-      if (isDuplicate) {
-        return { success: false, error: `You already sent a wave to ${contact} today.` }
-      }
-
-      const receivedCount = await getDailyReceiverActiveCount(contact)
-      if (receivedCount >= RECEIVER_DAILY_LIMIT) {
-        return { success: false, error: `${contact} already has enough waves today.` }
-      }
-    }
-
-    // 4. Create wave
+    // 2. Create the wave
     const wave = await createWave(templateId, profile.id, personalMessage, senderName)
-    const recipientIds: string[] = []
-
-    for (const contact of validContacts) {
-      const recipient = await assignWaveRecipient(wave.id, profile.id, contact)
-      recipientIds.push(recipient.id)
-    }
+    
+    // 3. Create ONE recipient with null contact (for link-based sharing)
+    const recipient = await assignWaveRecipient(wave.id, profile.id, null)
 
     await logEvent(profile.id, wave.id, 'wave_started')
-
-    return { success: true, waveId: wave.id, recipientIds }
-
+    
+    return { success: true, waveId: wave.id, recipientId: recipient.id }
   } catch (error) {
     console.error('Error starting wave:', error)
     return { success: false, error: 'The connection flickered. Try again.' }
   }
 }
 
+/**
+ * Marks a wave as completed by the recipient.
+ */
 export async function completeWaveAction(recipientId: string) {
   try {
     const profile = await getOrCreateDemoProfile()
@@ -89,9 +68,11 @@ export async function completeWaveAction(recipientId: string) {
   }
 }
 
+/**
+ * Forwards an existing wave template to a new shareable link.
+ */
 export async function passWaveForwardAction(
   originalRecipientId: string, 
-  contacts: string[], 
   personalMessage: string,
   senderName?: string
 ) {
@@ -102,42 +83,22 @@ export async function passWaveForwardAction(
 
     // 1. Check sender's daily cap
     const sentCount = await getDailySenderRecipientCount(profile.id)
-    const newCount = contacts.filter(c => c.trim()).length
-    if (sentCount + newCount > SENDER_DAILY_LIMIT) {
+    if (sentCount >= SENDER_DAILY_LIMIT) {
       return { success: false, error: 'Let it breathe.' }
     }
 
-    // 2. Validate and filter contacts
-    const validContacts = contacts.map(c => c.trim()).filter(c => c !== '')
-    if (validContacts.length === 0) return { success: false, error: 'Choose someone to reach.' }
-    if (validContacts.length > 3) return { success: false, error: 'One small ripple at a time (max 3).' }
-
-    // 3. Check for duplicates and receiver caps
-    for (const contact of validContacts) {
-      const isDuplicate = await hasDuplicateRecentWave(profile.id, contact)
-      if (isDuplicate) {
-        return { success: false, error: `You already sent a wave to ${contact} today.` }
-      }
-
-      const receivedCount = await getDailyReceiverActiveCount(contact)
-      if (receivedCount >= RECEIVER_DAILY_LIMIT) {
-        return { success: false, error: `${contact} already has enough waves today.` }
-      }
-    }
-
-    // 4. Create new wave
+    // 2. Create new wave (reusing template)
     const newWave = await createWave(templateId, profile.id, personalMessage, senderName)
     
-    for (const contact of validContacts) {
-      await assignWaveRecipient(newWave.id, profile.id, contact)
-    }
+    // 3. Create ONE new recipient for the shared link
+    const newRecipient = await assignWaveRecipient(newWave.id, profile.id, null)
 
     await logEvent(profile.id, newWave.id, 'wave_forwarded', { 
       original_recipient_id: originalRecipientId 
     })
     
     revalidatePath(`/wave/${originalRecipientId}`)
-    return { success: true, waveId: newWave.id }
+    return { success: true, waveId: newWave.id, recipientId: newRecipient.id }
   } catch (error) {
     console.error('Error forwarding wave:', error)
     return { success: false, error: 'Failed to forward wave' }

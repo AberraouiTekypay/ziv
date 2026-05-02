@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { startWaveAction } from '@/app/actions'
 import { WaveTemplate } from '@/lib/ziv-types'
+import ShareView from '@/components/ShareView'
+import { logEvent } from '@/lib/wave-service'
 
 interface Props {
   templates: WaveTemplate[]
@@ -17,9 +19,10 @@ const RECOMMENDED_TITLES = [
 export default function StartWaveForm({ templates }: Props) {
   const [step, setStep] = useState(1)
   const [selectedTemplateId, setSelectedTemplateId] = useState('')
-  const [contacts, setContacts] = useState(['', '', ''])
   const [message, setMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [newRecipientId, setNewRecipientId] = useState<string | null>(null)
+  const [newWaveId, setNewWaveId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const handleNext = () => {
@@ -31,26 +34,17 @@ export default function StartWaveForm({ templates }: Props) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const validContacts = contacts.map(c => c.trim()).filter(c => c !== '')
-    
-    if (validContacts.length === 0) {
-      setError('Choose someone to reach.')
-      return
-    }
-
-    if (validContacts.length > 3) {
-      setError('One small ripple at a time (max 3).')
-      return
-    }
-
     setIsSubmitting(true)
     setError(null)
     
     const senderName = localStorage.getItem('ziv_tester_name') || undefined
-    const res = await startWaveAction(selectedTemplateId, validContacts, message, senderName)
+    const res = await startWaveAction(selectedTemplateId, message, senderName)
     
     if (res.success) {
+      setNewRecipientId(res.recipientId || null)
+      setNewWaveId(res.waveId || null)
       setStep(3)
+      await logEvent(null, res.waveId || null, 'wave_share_opened')
     } else {
       setError(res.error || 'The connection flickered. Try again.')
     }
@@ -127,35 +121,13 @@ export default function StartWaveForm({ templates }: Props) {
       <form onSubmit={handleSubmit} className="flex-1 flex flex-col space-y-8 animate-fade-in">
         <div className="space-y-4">
           <label className="text-xs font-bold uppercase tracking-widest text-gray-400 block px-1">
-            Who should feel this? (1-3)
-          </label>
-          <div className="space-y-3">
-            {contacts.map((contact, i) => (
-              <input
-                key={i}
-                type="text"
-                placeholder={`Friend's contact ${i + 1}`}
-                value={contact}
-                onChange={(e) => {
-                  const newC = [...contacts]
-                  newC[i] = e.target.value
-                  setContacts(newC)
-                }}
-                className="w-full p-5 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-[#004D40] outline-none transition-all text-lg"
-              />
-            ))}
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <label className="text-xs font-bold uppercase tracking-widest text-gray-400 block px-1">
             Personal Message (Optional)
           </label>
           <textarea
             placeholder="Add a soft touch..."
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            className="w-full p-5 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-[#004D40] outline-none transition-all h-32 resize-none text-lg"
+            className="w-full p-5 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-[#004D40] outline-none transition-all h-48 resize-none text-lg"
           />
         </div>
 
@@ -167,10 +139,10 @@ export default function StartWaveForm({ templates }: Props) {
           )}
           <button
             type="submit"
-            disabled={isSubmitting || contacts.every(c => !c.trim())}
+            disabled={isSubmitting}
             className="w-full bg-[#004D40] text-white py-6 rounded-[2rem] font-black text-xl transition-all active:scale-95 disabled:opacity-50 shadow-xl shadow-[#004D40]/20"
           >
-            {isSubmitting ? 'Starting...' : 'Start the Wave'}
+            {isSubmitting ? 'Starting...' : 'Create the Wave'}
           </button>
           <button
             type="button"
@@ -184,22 +156,8 @@ export default function StartWaveForm({ templates }: Props) {
     )
   }
 
-  if (step === 3) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center text-center py-10 animate-zoom-in">
-        <div className="text-6xl mb-8">🌊</div>
-        <h2 className="text-3xl font-black text-[#1A1A1A] mb-4 leading-tight">Your wave has started.</h2>
-        <p className="text-gray-500 font-light mb-12 max-w-xs text-lg">
-          It's moving out into the world now.
-        </p>
-        <button
-          onClick={() => window.location.href = '/'}
-          className="bg-[#1A1A1A] text-white px-12 py-6 rounded-full font-bold text-lg transition-all active:scale-95 shadow-lg shadow-black/10"
-        >
-          Back home
-        </button>
-      </div>
-    )
+  if (step === 3 && newRecipientId && newWaveId) {
+    return <ShareView recipientId={newRecipientId} waveId={newWaveId} />
   }
 
   return null

@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { completeWaveAction, passWaveForwardAction } from '@/app/actions'
 import { supabase } from '@/lib/supabase'
+import ShareView from '@/components/ShareView'
+import { logEvent } from '@/lib/wave-service'
 
 interface Props {
   recipient: any
@@ -11,10 +13,10 @@ interface Props {
 export default function WaveInteraction({ recipient }: Props) {
   const [step, setStep] = useState(recipient.status === 'completed' ? 2 : 1)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [contacts, setContacts] = useState(['', '', ''])
-  const [message, setMessage] = useState('')
   const [isForwarding, setIsForwarding] = useState(false)
-  const [showForm, setShowForm] = useState(false)
+  const [showShare, setShowShare] = useState(false)
+  const [newRecipientId, setNewRecipientId] = useState<string | null>(null)
+  const [newWaveId, setNewWaveId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const template = recipient.waves?.wave_templates
@@ -33,10 +35,7 @@ export default function WaveInteraction({ recipient }: Props) {
           .eq('id', recipient.id)
         
         if (!error) {
-          await (supabase as any).from('events').insert({
-            wave_id: recipient.wave_id,
-            event_name: 'wave_opened'
-          })
+          await logEvent(null, recipient.wave_id, 'wave_opened')
         }
       }
     }
@@ -55,23 +54,32 @@ export default function WaveInteraction({ recipient }: Props) {
     setIsSubmitting(false)
   }
 
-  const handleForward = async (e: React.FormEvent) => {
-    e.preventDefault()
-    const validContacts = contacts.map(c => c.trim()).filter(c => c !== '')
-    if (validContacts.length === 0) {
-      setError('Choose someone to reach.')
-      return
-    }
-
+  const handleForward = async () => {
     setIsForwarding(true)
     setError(null)
-    const res = await passWaveForwardAction(recipient.id, validContacts, message)
+    
+    const senderName = localStorage.getItem('ziv_tester_name') || undefined
+    const res = await passWaveForwardAction(recipient.id, '', senderName)
+    
     if (res.success) {
-      setStep(3)
+      setNewRecipientId(res.recipientId || null)
+      setNewWaveId(res.waveId || null)
+      setShowShare(true)
+      await logEvent(null, res.waveId || null, 'wave_share_opened')
     } else {
-      setError(res.error || 'Failed to forward wave.')
+      setError(res.error || 'Failed to generate link.')
     }
     setIsForwarding(false)
+  }
+
+  if (showShare && newRecipientId && newWaveId) {
+    return (
+      <div className="max-w-md w-full min-h-screen sm:min-h-0 bg-[#FFFDFB] sm:rounded-[2.5rem] shadow-none sm:shadow-2xl border-none sm:border border-gray-100 flex flex-col overflow-hidden animate-zoom-in">
+        <div className="p-10 flex-1 flex flex-col">
+          <ShareView recipientId={newRecipientId} waveId={newWaveId} />
+        </div>
+      </div>
+    )
   }
 
   if (step === 1) {
@@ -115,8 +123,7 @@ export default function WaveInteraction({ recipient }: Props) {
   if (step === 2) {
     return (
       <div className="max-w-md w-full min-h-screen sm:min-h-0 bg-[#FFFDFB] sm:rounded-[2.5rem] shadow-none sm:shadow-2xl border-none sm:border border-gray-100 flex flex-col overflow-hidden animate-slide-up">
-        <div className={`p-10 flex-1 flex flex-col items-center justify-center text-center space-y-8 relative overflow-hidden transition-all duration-1000`}>
-          {/* Soft Gold Glow */}
+        <div className={`p-10 flex-1 flex flex-col items-center justify-center text-center space-y-12 relative overflow-hidden`}>
           <div className="absolute inset-0 bg-gradient-to-b from-[#FFD700]/10 to-transparent pointer-events-none" />
           
           <div className="relative z-10 space-y-6">
@@ -129,83 +136,26 @@ export default function WaveInteraction({ recipient }: Props) {
             </div>
           </div>
 
-          {!showForm ? (
+          <div className="relative z-10 w-full space-y-4">
+            {error && (
+              <div className="p-4 bg-red-50 border border-red-100 text-red-600 rounded-2xl text-sm font-medium animate-fade-in">
+                {error}
+              </div>
+            )}
             <button
-              onClick={() => setShowForm(true)}
-              className="relative z-10 w-full bg-[#1A1A1A] text-white py-6 rounded-[2rem] font-bold text-lg transition-all active:scale-95 shadow-xl shadow-black/10"
+              onClick={handleForward}
+              disabled={isForwarding}
+              className="w-full bg-[#1A1A1A] text-white py-6 rounded-[2rem] font-bold text-lg transition-all active:scale-95 shadow-xl shadow-black/10"
             >
-              Pass it forward
+              {isForwarding ? 'Preparing...' : 'Pass it forward'}
             </button>
-          ) : (
-            <form onSubmit={handleForward} className="relative z-10 w-full space-y-6 text-left animate-fade-in">
-              <div className="space-y-4">
-                <label className="text-xs font-bold uppercase tracking-widest text-gray-400">
-                  Pass the wave to (1-3)
-                </label>
-                {contacts.map((contact, i) => (
-                  <input
-                    key={i}
-                    type="text"
-                    placeholder={`Friend ${i + 1}`}
-                    value={contact}
-                    onChange={(e) => {
-                      const newC = [...contacts]
-                      newC[i] = e.target.value
-                      setContacts(newC)
-                    }}
-                    className="w-full p-5 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-[#004D40] transition-all"
-                  />
-                ))}
-              </div>
-              <textarea
-                placeholder="Add your own touch..."
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                className="w-full p-5 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-[#004D40] transition-all h-24 resize-none"
-              />
-              <div className="space-y-4">
-                {error && (
-                  <div className="p-4 bg-red-50 border border-red-100 text-red-600 rounded-2xl text-sm font-medium animate-fade-in text-center">
-                    {error}
-                  </div>
-                )}
-                <button
-                  type="submit"
-                  disabled={isForwarding || contacts.every(c => !c.trim())}
-                  className="w-full bg-[#004D40] text-white py-5 rounded-2xl font-bold transition-all active:scale-95 disabled:opacity-50 shadow-xl shadow-[#004D40]/20"
-                >
-                  {isForwarding ? 'Sending...' : 'Send Wave'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowForm(false)}
-                  className="w-full py-2 text-gray-400 font-bold hover:text-[#1A1A1A] transition-colors text-center text-sm"
-                >
-                  Back
-                </button>
-              </div>
-            </form>
-          )}
-        </div>
-      </div>
-    )
-  }
-
-  if (step === 3) {
-    return (
-      <div className="max-w-md w-full min-h-screen sm:min-h-0 bg-[#FFFDFB] sm:rounded-[2.5rem] shadow-none sm:shadow-2xl border-none sm:border border-gray-100 flex flex-col overflow-hidden animate-fade-in">
-        <div className="p-10 flex-1 flex flex-col items-center justify-center text-center space-y-8">
-          <div className="text-6xl animate-pulse">🕊️</div>
-          <h2 className="text-3xl font-black text-[#1A1A1A]">The wave is moving.</h2>
-          <p className="text-gray-500 font-light max-w-[200px]">
-            Thank you for being part of the flow.
-          </p>
-          <button
-            onClick={() => window.location.href = '/'}
-            className="bg-[#1A1A1A] text-white px-10 py-5 rounded-full font-bold transition-transform active:scale-95 shadow-lg shadow-black/10"
-          >
-            Back home
-          </button>
+            <button
+              onClick={() => window.location.href = '/'}
+              className="w-full py-2 text-gray-400 font-bold hover:text-[#1A1A1A] transition-colors text-sm"
+            >
+              Maybe later
+            </button>
+          </div>
         </div>
       </div>
     )

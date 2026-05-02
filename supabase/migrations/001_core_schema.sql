@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS public.wave_recipients (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   wave_id UUID REFERENCES public.waves(id),
   sender_id UUID REFERENCES public.profiles(id),
-  receiver_contact TEXT NOT NULL,
+  receiver_contact TEXT,
   receiver_id UUID REFERENCES public.profiles(id),
   status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'opened', 'completed', 'muted')),
   opened_at TIMESTAMPTZ,

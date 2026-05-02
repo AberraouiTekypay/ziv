@@ -20,8 +20,13 @@ export default function TestTool({ templates }: Props) {
 
     setIsSubmitting(true)
     setResult(null)
-    const res = await startWaveAction(selectedTemplateId, [contact.trim()], 'Demo wave message')
-    setResult(res as any)
+    const res = await startWaveAction(selectedTemplateId, 'Internal test wave', 'Tester')
+    setResult({
+      success: res.success,
+      waveId: res.waveId,
+      recipientIds: res.recipientId ? [res.recipientId] : [],
+      error: res.error
+    } as any)
     setIsSubmitting(false)
   }
 

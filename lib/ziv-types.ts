@@ -29,7 +29,7 @@ export type WaveRecipient = {
   id: string
   wave_id: string | null
   sender_id: string | null
-  receiver_contact: string
+  receiver_contact: string | null
   receiver_id: string | null
   status: WaveStatus
   opened_at: string | null

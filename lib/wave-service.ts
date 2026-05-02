@@ -162,7 +162,7 @@ export async function createWave(
 export async function assignWaveRecipient(
   waveId: string, 
   senderId: string, 
-  receiverContact: string
+  receiverContact?: string | null
 ): Promise<WaveRecipient> {
   if (!isSupabaseConfigured) throw new Error('Supabase not connected. Action blocked.')
 
@@ -171,7 +171,7 @@ export async function assignWaveRecipient(
     .insert({
       wave_id: waveId,
       sender_id: senderId,
-      receiver_contact: receiverContact,
+      receiver_contact: receiverContact || null,
       status: 'pending'
     })
     .select()

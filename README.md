@@ -89,23 +89,31 @@ The initial migration seeds the following templates:
 9.  Share a meal without your phone
 10. Tell someone you appreciate them
 
+## Share Flow
+
+In this version of Ziv, we focus on link-based distribution to keep the experience calm and frictionless:
+- **No Contact Collection**: We do not ask for recipient names or emails upfront.
+- **Unique Links**: When you start or pass a wave, a unique shareable link is generated immediately.
+- **WhatsApp Integration**: You can share your wave directly via a WhatsApp deep link with a pre-filled message.
+- **Simple Copy**: Use the "Copy Link" button to send the wave via any other platform.
+
 ## Core Flows
 
 ### 1. Start a Wave (`/start`)
 - Select a pre-defined template from the ivory card list.
-- Enter 1-3 contacts (names or emails) to send the wave to.
 - Add an optional personal message.
-- A new wave is created, and unique links are generated for each recipient.
+- A new wave is created, and a shareable link is generated.
+- Use the **Share Screen** to send it via WhatsApp or Copy.
 
 ### 2. Receive & Complete a Wave (`/wave/[id]`)
-- View the wave card sent by "Someone who thought of you."
+- View the wave card. If the sender provided their name at `/beta`, you'll see "[Name] sent you this."
 - Perform the requested action in the real world.
 - Click "I did it" to mark the wave as completed.
 - Experience a soft gold glow and a moment of appreciation.
 
 ### 3. Pass it Forward
-- After completion, you can pass the same template forward to 1-3 new people.
-- This creates a ripple effect, keeping the positive action moving.
+- After completion, you can pass the same template forward by generating a **new** unique link.
+- No new contact information is required; just click "Pass it forward" and share the new link.
 
 ## Anti-Spam Rules
 

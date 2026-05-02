@@ -8,6 +8,12 @@ interface Props {
   templates: WaveTemplate[]
 }
 
+const RECOMMENDED_TITLES = [
+  'Call your parents',
+  'Message someone you miss',
+  'Thank someone who helped you'
+]
+
 export default function StartWaveForm({ templates }: Props) {
   const [step, setStep] = useState(1)
   const [selectedTemplateId, setSelectedTemplateId] = useState('')
@@ -61,69 +67,95 @@ export default function StartWaveForm({ templates }: Props) {
   }
 
   if (step === 1) {
+    const recommended = templates.filter(t => RECOMMENDED_TITLES.includes(t.title))
+    const others = templates.filter(t => !RECOMMENDED_TITLES.includes(t.title))
+
+    const renderTemplateButton = (t: WaveTemplate) => (
+      <button
+        key={t.id}
+        onClick={() => setSelectedTemplateId(t.id)}
+        className={`w-full p-6 text-left rounded-3xl border-2 transition-all duration-300 ${
+          selectedTemplateId === t.id 
+            ? 'border-[#004D40] bg-[#F0F7F6] ring-4 ring-[#004D40]/5' 
+            : 'border-gray-50 bg-white hover:border-gray-200'
+        }`}
+      >
+        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#004D40] opacity-40 mb-2 block">
+          {t.category}
+        </span>
+        <h3 className="text-lg font-bold text-[#1A1A1A] leading-snug">{t.title}</h3>
+      </button>
+    )
+
     return (
-      <div className="flex-1 flex flex-col">
-        <div className="flex-1 space-y-4 overflow-y-auto max-h-[60vh] pr-2">
-          {templates.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setSelectedTemplateId(t.id)}
-              className={`w-full p-6 text-left rounded-2xl border-2 transition-all ${
-                selectedTemplateId === t.id 
-                  ? 'border-[#004D40] bg-[#F0F7F6]' 
-                  : 'border-gray-50 bg-white hover:border-gray-200'
-              }`}
-            >
-              <span className="text-xs font-bold uppercase tracking-widest text-[#004D40] opacity-50 mb-1 block">
-                {t.category}
-              </span>
-              <h3 className="text-lg font-bold text-[#1A1A1A]">{t.title}</h3>
-            </button>
-          ))}
+      <div className="flex-1 flex flex-col h-full overflow-hidden">
+        <div className="flex-1 space-y-10 overflow-y-auto pr-2 -mr-2">
+          {recommended.length > 0 && (
+            <section className="space-y-4">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 px-1">Recommended</h2>
+              <div className="space-y-3">
+                {recommended.map(renderTemplateButton)}
+              </div>
+            </section>
+          )}
+
+          {others.length > 0 && (
+            <section className="space-y-4">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 px-1">All Templates</h2>
+              <div className="space-y-3">
+                {others.map(renderTemplateButton)}
+              </div>
+            </section>
+          )}
         </div>
-        <button
-          onClick={handleNext}
-          disabled={!selectedTemplateId}
-          className="mt-8 w-full bg-[#004D40] text-white py-5 rounded-2xl font-bold transition-transform active:scale-95 disabled:opacity-50 disabled:scale-100 shadow-xl shadow-[#004D40]/20"
-        >
-          Next
-        </button>
+        
+        <div className="pt-8 mt-auto">
+          <button
+            onClick={handleNext}
+            disabled={!selectedTemplateId}
+            className="w-full bg-[#004D40] text-white py-6 rounded-[2rem] font-black text-xl transition-all active:scale-95 disabled:opacity-50 disabled:scale-100 shadow-xl shadow-[#004D40]/20"
+          >
+            Next
+          </button>
+        </div>
       </div>
     )
   }
 
   if (step === 2) {
     return (
-      <form onSubmit={handleSubmit} className="flex-1 flex flex-col space-y-6 animate-fade-in">
+      <form onSubmit={handleSubmit} className="flex-1 flex flex-col space-y-8 animate-fade-in">
         <div className="space-y-4">
-          <label className="text-sm font-bold uppercase tracking-widest text-gray-400 block">
+          <label className="text-xs font-bold uppercase tracking-widest text-gray-400 block px-1">
             Who should feel this? (1-3)
           </label>
-          {contacts.map((contact, i) => (
-            <input
-              key={i}
-              type="text"
-              placeholder={`Contact ${i + 1} (email or name)`}
-              value={contact}
-              onChange={(e) => {
-                const newC = [...contacts]
-                newC[i] = e.target.value
-                setContacts(newC)
-              }}
-              className="w-full p-5 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-[#004D40] outline-none transition-all"
-            />
-          ))}
+          <div className="space-y-3">
+            {contacts.map((contact, i) => (
+              <input
+                key={i}
+                type="text"
+                placeholder={`Friend's contact ${i + 1}`}
+                value={contact}
+                onChange={(e) => {
+                  const newC = [...contacts]
+                  newC[i] = e.target.value
+                  setContacts(newC)
+                }}
+                className="w-full p-5 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-[#004D40] outline-none transition-all text-lg"
+              />
+            ))}
+          </div>
         </div>
 
         <div className="space-y-4">
-          <label className="text-sm font-bold uppercase tracking-widest text-gray-400 block">
+          <label className="text-xs font-bold uppercase tracking-widest text-gray-400 block px-1">
             Personal Message (Optional)
           </label>
           <textarea
             placeholder="Add a soft touch..."
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            className="w-full p-5 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-[#004D40] outline-none transition-all h-32 resize-none"
+            className="w-full p-5 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-[#004D40] outline-none transition-all h-32 resize-none text-lg"
           />
         </div>
 
@@ -136,16 +168,16 @@ export default function StartWaveForm({ templates }: Props) {
           <button
             type="submit"
             disabled={isSubmitting || contacts.every(c => !c.trim())}
-            className="w-full bg-[#004D40] text-white py-5 rounded-2xl font-bold transition-transform active:scale-95 disabled:opacity-50 shadow-xl shadow-[#004D40]/20"
+            className="w-full bg-[#004D40] text-white py-6 rounded-[2rem] font-black text-xl transition-all active:scale-95 disabled:opacity-50 shadow-xl shadow-[#004D40]/20"
           >
             {isSubmitting ? 'Starting...' : 'Start the Wave'}
           </button>
           <button
             type="button"
             onClick={() => setStep(1)}
-            className="w-full py-4 text-gray-400 font-bold hover:text-[#1A1A1A] transition-colors"
+            className="w-full py-4 text-gray-400 font-bold hover:text-[#1A1A1A] transition-colors text-sm"
           >
-            Back
+            Back to Templates
           </button>
         </div>
       </form>
@@ -155,14 +187,14 @@ export default function StartWaveForm({ templates }: Props) {
   if (step === 3) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center text-center py-10 animate-zoom-in">
-        <div className="text-6xl mb-6">🌊</div>
-        <h2 className="text-3xl font-black text-[#1A1A1A] mb-4">Your wave has started.</h2>
-        <p className="text-gray-500 font-light mb-10 max-w-xs">
+        <div className="text-6xl mb-8">🌊</div>
+        <h2 className="text-3xl font-black text-[#1A1A1A] mb-4 leading-tight">Your wave has started.</h2>
+        <p className="text-gray-500 font-light mb-12 max-w-xs text-lg">
           It's moving out into the world now.
         </p>
         <button
           onClick={() => window.location.href = '/'}
-          className="bg-[#1A1A1A] text-white px-10 py-5 rounded-full font-bold transition-transform active:scale-95 shadow-lg shadow-black/10"
+          className="bg-[#1A1A1A] text-white px-12 py-6 rounded-full font-bold text-lg transition-all active:scale-95 shadow-lg shadow-black/10"
         >
           Back home
         </button>

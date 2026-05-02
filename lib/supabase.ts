@@ -4,10 +4,10 @@ import { Database } from './database.types'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
+export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey)
+
 // In development/build, we allow placeholders.
-// We only throw if we are CERTAIN we are in a live production runtime (optional).
-// For now, let's just log a warning to allow build to pass.
-if (!supabaseUrl || !supabaseAnonKey) {
+if (!isSupabaseConfigured) {
   console.warn('WARNING: Missing Supabase environment variables. Using placeholders.')
 }
 

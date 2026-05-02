@@ -1,4 +1,5 @@
 import { getActiveTemplates } from '@/lib/wave-service'
+import { isSupabaseConfigured } from '@/lib/supabase'
 import StartWaveForm from './StartWaveForm'
 
 export const dynamic = 'force-dynamic'
@@ -14,9 +15,16 @@ export default async function StartPage() {
             <h1 className="text-3xl font-black uppercase tracking-tighter text-[#1A1A1A]">
               Start a Wave
             </h1>
-            <p className="text-gray-400 font-light mt-2">
-              Choose an action to ripple out.
-            </p>
+            {!isSupabaseConfigured ? (
+              <div className="mt-4 p-4 bg-amber-50 border border-amber-100 rounded-2xl text-amber-700 text-sm font-medium animate-fade-in">
+                Ziv is almost ready. <br />
+                <span className="font-light opacity-80">Supabase is not connected yet.</span>
+              </div>
+            ) : (
+              <p className="text-gray-400 font-light mt-2">
+                Choose an action to ripple out.
+              </p>
+            )}
           </header>
 
           <StartWaveForm templates={templates} />

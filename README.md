@@ -61,6 +61,14 @@ Stop scrolling. Feel something real.
     - `NEXT_PUBLIC_APP_URL`: Your deployed site URL (e.g., `https://ziv-zeta.vercel.app`).
 2.  **Deploy**: Push your code to GitHub (connected to Vercel) or run `vercel --prod`.
 
+### Deployment Debug Checklist
+
+If the site loads but shows "Supabase not connected" or server errors:
+- [ ] **Check Vercel Environment Variables**: Ensure `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are defined in the **Production** environment.
+- [ ] **Redeploy**: Vercel requires a redeploy (or a new build) to pick up new environment variables.
+- [ ] **SQL Migration**: Confirm you have run `supabase/migrations/001_core_schema.sql` in your Supabase SQL Editor.
+- [ ] **Verify Tables**: Ensure the `wave_templates` table exists and contains at least 10 rows (use `SELECT count(*) FROM wave_templates;`).
+
 ### Testing After Deployment
 
 1.  **Internal Verification**: Navigate to `/test` on your live site.

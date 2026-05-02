@@ -49,3 +49,11 @@
 - Row Level Security (RLS) enabled on all tables with permissive development policies.
 - Full deployment readiness for Vercel, including environment variable mapping.
 - Comprehensive deployment documentation in `README.md`.
+
+## [0.1.5] - 2026-05-02
+
+### Fixed
+- Stabilized `/start` page with defensive error handling and local fallbacks.
+- Prevented server crashes when Supabase environment variables are missing.
+- Added automatic template fallback (10 core templates) if database is unreachable.
+- Improved deployment debug instructions in `README.md`.

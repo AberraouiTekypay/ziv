@@ -13,14 +13,18 @@ export default function WaveClient({ recipient }: WaveClientProps) {
   const [emails, setEmails] = useState(['', '', ''])
   const [showPassForm, setShowPassForm] = useState(false)
   const [status, setStatus] = useState(recipient.status)
+  const [error, setError] = useState<string | null>(null)
 
   const template = recipient.waves?.templates
 
   const handleComplete = async () => {
     setIsCompleting(true)
+    setError(null)
     const result = await completeWaveAction(recipient.id)
     if (result.success) {
       setStatus('sent')
+    } else {
+      setError(result.error || 'Failed to complete wave')
     }
     setIsCompleting(false)
   }
@@ -30,10 +34,13 @@ export default function WaveClient({ recipient }: WaveClientProps) {
     if (validEmails.length === 0) return
 
     setIsPassing(true)
+    setError(null)
     const result = await passWaveAction(recipient.id, validEmails)
     if (result.success) {
       setStatus('sent')
       setShowPassForm(false)
+    } else {
+      setError(result.error || 'Failed to pass wave')
     }
     setIsPassing(false)
   }
@@ -79,6 +86,11 @@ export default function WaveClient({ recipient }: WaveClientProps) {
 
         {/* Actions Area */}
         <div className="p-8 md:p-12 bg-gray-50 border-t border-gray-100">
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 rounded-xl text-sm font-medium">
+              {error}
+            </div>
+          )}
           {!showPassForm ? (
             <div className="flex flex-col sm:flex-row gap-4">
               <button

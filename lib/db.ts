@@ -133,3 +133,54 @@ export async function getOrCreateUser(email: string, fullName?: string): Promise
   if (error) throw error
   return newUser as Database['public']['Tables']['users']['Row']
 }
+
+/**
+ * Get count of waves sent by a user in the last 24 hours.
+ */
+export async function getDailySentCount(userId: string): Promise<number> {
+  const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+  
+  const { count, error } = await (supabase as any)
+    .from('waves')
+    .select('*', { count: 'exact', head: true })
+    .eq('sender_id', userId)
+    .gte('created_at', twentyFourHoursAgo)
+
+  if (error) throw error
+  return count || 0
+}
+
+/**
+ * Get count of waves received by an email in the last 24 hours.
+ */
+export async function getDailyReceivedCount(email: string): Promise<number> {
+  const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+  
+  const { count, error } = await (supabase as any)
+    .from('wave_recipients')
+    .select('*', { count: 'exact', head: true })
+    .eq('recipient_email', email)
+    .gte('created_at', twentyFourHoursAgo)
+
+  if (error) throw error
+  return count || 0
+}
+
+/**
+ * Check if a sender has already sent the same template to a recipient in the last 24 hours.
+ */
+export async function checkDuplicateWave(senderId: string, recipientEmail: string, templateId: string): Promise<boolean> {
+  const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+  
+  const { data, error } = await (supabase as any)
+    .from('wave_recipients')
+    .select('*, waves!inner(*)')
+    .eq('recipient_email', recipientEmail)
+    .eq('waves.sender_id', senderId)
+    .eq('waves.template_id', templateId)
+    .gte('created_at', twentyFourHoursAgo)
+    .limit(1)
+
+  if (error) throw error
+  return data && data.length > 0
+}

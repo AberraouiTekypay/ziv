@@ -30,3 +30,13 @@
 - Automated "opened" status tracking and system event logging.
 - Demo profile helper to handle the absence of full authentication.
 - CSS animations for transitions between flow states.
+
+## [0.1.3] - 2026-05-02
+
+### Added
+- Anti-spam rules: Daily send cap (3), Daily receive cap (3), and 24h deduplication.
+- Internal testing tool at `/test` for manual loop verification.
+- Metrics service (`lib/metrics-service.ts`) for tracking completion and forward rates.
+- Graceful error handling and validation for all wave-related forms.
+- Visual polish: Refined card spacing, button states, and completion animations.
+- Empty states for missing templates and invalid wave links.

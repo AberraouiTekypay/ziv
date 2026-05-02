@@ -181,3 +181,54 @@ export async function logEvent(
 
   if (error) throw error
 }
+
+/**
+ * Get the number of wave recipients created by a sender in the last 24 hours.
+ */
+export async function getDailySenderRecipientCount(senderId: string): Promise<number> {
+  const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+  
+  const { count, error } = await (supabase as any)
+    .from('wave_recipients')
+    .select('*', { count: 'exact', head: true })
+    .eq('sender_id', senderId)
+    .gte('created_at', twentyFourHoursAgo)
+
+  if (error) throw error
+  return count || 0
+}
+
+/**
+ * Get the number of pending or opened waves for a receiver contact in the last 24 hours.
+ */
+export async function getDailyReceiverActiveCount(receiverContact: string): Promise<number> {
+  const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+  
+  const { count, error } = await (supabase as any)
+    .from('wave_recipients')
+    .select('*', { count: 'exact', head: true })
+    .eq('receiver_contact', receiverContact.trim().toLowerCase())
+    .in('status', ['pending', 'opened'])
+    .gte('created_at', twentyFourHoursAgo)
+
+  if (error) throw error
+  return count || 0
+}
+
+/**
+ * Check if a sender has already sent a wave to the same contact in the last 24 hours.
+ */
+export async function hasDuplicateRecentWave(senderId: string, receiverContact: string): Promise<boolean> {
+  const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+  
+  const { data, error } = await (supabase as any)
+    .from('wave_recipients')
+    .select('id')
+    .eq('sender_id', senderId)
+    .eq('receiver_contact', receiverContact.trim().toLowerCase())
+    .gte('created_at', twentyFourHoursAgo)
+    .limit(1)
+
+  if (error) throw error
+  return data && data.length > 0
+}

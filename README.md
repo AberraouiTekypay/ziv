@@ -79,12 +79,28 @@ The initial migration seeds the following templates:
 - After completion, you can pass the same template forward to 1-3 new people.
 - This creates a ripple effect, keeping the positive action moving.
 
-## Testing Manually
+## Anti-Spam Rules
 
-1.  **Start a wave**: Go to `/start`, pick a template, enter a test contact, and submit.
-2.  **Inspect Database**: In Supabase, look at the `wave_recipients` table to find the unique `id` for your test recipient.
-3.  **Receive wave**: Navigate to `/wave/[your-recipient-id]` to see the wave card.
-4.  **Complete & Forward**: Click "I did it", then use the "Pass it forward" form to extend the chain.
+To maintain the calm nature of Ziv, the following rules are enforced:
+- **Daily Send Cap**: Max 3 recipients per sender per rolling 24 hours.
+- **Daily Receive Cap**: Max 3 pending/opened waves per recipient per rolling 24 hours.
+- **Deduplication**: Prevent sending to the same person twice within 24 hours.
+
+## Internal Testing Tool
+
+Use `/test` to manually verify the core loop:
+- Choose any active template.
+- Enter a test contact name or email.
+- Copy the generated `/wave/[id]` link.
+- Open the link (ideally in Incognito) to test the receiver flow.
+
+## Core Metrics
+
+Ziv tracks basic anonymous metrics to monitor the health of the ripple:
+- **Total Waves**: Total number of waves initiated.
+- **Completed Waves**: Total number of recipients who clicked "I did it".
+- **Completion Rate**: % of recipients who complete their wave.
+- **Forward Rate**: % of waves that lead to at least one "pass-forward" action.
 
 ---
 An EM300.co Company

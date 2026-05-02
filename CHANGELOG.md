@@ -11,3 +11,11 @@
 - Clean minimalist landing page at `/`.
 - Documentation: `README.md`, `CHANGELOG.md`, and `.env.example`.
 - Global styles and theme colors.
+
+## [0.1.1] - 2026-05-02
+
+### Added
+- Core Supabase schema migration (`001_core_schema.sql`) with tables: `profiles`, `wave_templates`, `waves`, `wave_recipients`, `events`.
+- Seeded 10 core wave templates.
+- TypeScript types for the core data model in `lib/ziv-types.ts`.
+- Core Wave Service with interaction placeholders in `lib/wave-service.ts`.
